@@ -1,0 +1,2 @@
+# Solitario
+Juego de mesa
