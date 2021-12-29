@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8692998794284916228}
   - component: {fileID: 8692998794284916229}
+  - component: {fileID: 523507014815641978}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -25,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8692998794284916231}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.04, y: 0, z: 0.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 8692998794675055117}
@@ -45,6 +46,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   holderPrefab: {fileID: -8880592279294069870, guid: 9e46e59aba79ec245a80c5d057c365f6, type: 3}
+  moveCount: 0
+--- !u!114 &523507014815641978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8692998794284916231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab51b91584800dc46997d6641fa6cc7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IsSquare: 0
+  horizontalResolution: 7
+  verticalResolution: 7
+  DefineUsingGaps: 0
+  IsCentered: 1
+  dimensions: {x: 6, y: 6}
+  horizontalGapLength: 1
+  verticalGapLength: 1
+  drawGizmos: 1
+  gizmoColor: {r: 1, g: 0.4454409, b: 0.015686274, a: 1}
+  gizmoSize: 0.1
+  showCoords: 1
 --- !u!1 &8692998794286930081
 GameObject:
   m_ObjectHideFlags: 0

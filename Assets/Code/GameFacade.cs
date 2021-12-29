@@ -7,8 +7,11 @@ public class GameFacade : MonoBehaviour
     [SerializeField] Board boardPrefab;
     Board board;
 
-    [SerializeField] UIController UIPrefab;
-    UIController UI;
+    [SerializeField] GameUIController gameUIPrefab;
+    GameUIController gameUI;
+
+    CommandInvoker commandInvoker;
+    SaveSystem gameData;
 
     private void OnEnable()
     {
@@ -16,9 +19,17 @@ public class GameFacade : MonoBehaviour
         board.Initialize();
         board.OnGameStarted += OnGameStarted;
         board.OnGameEnded += OnGameEnded;
+        board.OnUserCommand += DoUserCommand;
 
-        UI = Instantiate(UIPrefab);
-        UI.ShowHelp();
+        gameUI = Instantiate(gameUIPrefab);
+        gameUI.OnUndoClicked += DoUndo;
+        gameUI.OnRedoClicked += DoRedo;
+        gameUI.OnSaveClicked += DoSave;
+        gameUI.OnLoadClicked += DoLoad;
+        gameUI.ShowHelp("Toca la primera pieza para empezar");
+
+        commandInvoker = new CommandInvoker();
+        gameData = new SaveSystem();
     }
 
     void OnGameStarted()
@@ -28,18 +39,58 @@ public class GameFacade : MonoBehaviour
 
     void OnGameEnded(int moveCount)
     {
-        UI.ShowGameOver(33 - moveCount);
+        gameUI.ShowGameOver(33 - moveCount);
     }
+
+
+    void DoSave()
+    {
+        gameData.SaveGame("\\partida1", commandInvoker.GetHistoryData());
+    }
+
+    void DoLoad()
+    {
+        GameData data = gameData.LoadGame("\\partida1");
+        commandInvoker.LoadListFromData(data, board);
+    }
+
+    void DoUserCommand(Command command)
+    {
+        commandInvoker.ExecuteCommand(command);
+    }
+
+    void DoUndo()
+    {
+        commandInvoker.UndoCommand();
+        board.moveCount--;
+        if(board.moveCount == 0)
+        {
+            StopCoroutine("HelpBox");
+            gameUI.ShowHelp("Toca la primera pieza para empezar");
+        }
+    }
+
+    void DoRedo()
+    {
+        commandInvoker.ExecuteCommand();
+    }
+
     IEnumerator HelpBox()
     {
-        UI.ShowHelp("Puedes saltar una ficha horizontalmente o verticalmente");
+        gameUI.ShowHelp("Puedes saltar una ficha horizontalmente o verticalmente");
         yield return new WaitForSeconds(5);
-        UI.HideHelp();
+        gameUI.HideHelp();
     }
 
     private void OnDisable()
     {
         board.OnGameStarted -= OnGameStarted;
         board.OnGameEnded -= OnGameEnded;
+        board.OnUserCommand -= DoUserCommand;
+
+        gameUI.OnUndoClicked -= DoUndo;
+        gameUI.OnRedoClicked -= DoRedo;
+        gameUI.OnSaveClicked -= DoSave;
+        gameUI.OnLoadClicked -= DoLoad;
     }
 }

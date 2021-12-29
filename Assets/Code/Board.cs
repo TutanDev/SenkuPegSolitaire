@@ -5,65 +5,60 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-    const int dimensions = 7;
-    const int offset = -3;
+    WorldGrid grid;
 
     [SerializeField] PieceHolder holderPrefab;
     List<PieceHolder> holders = new List<PieceHolder>(); 
 
     public Action OnGameStarted;
     public Action<int> OnGameEnded;
+    public Action<Command> OnUserCommand;
 
     Transform graphicsTransform;
-    MoveData moveData = new MoveData();
-    int moveCount = 0;
+    MoveData currentMove = new MoveData();
+    public int moveCount = 0;
     bool MoveStarted;
-    bool firstClick;
 
     public void Initialize()
     {
+        grid = GetComponent<WorldGrid>();
         graphicsTransform = transform.GetChild(0);
         CreateBoard();
-        firstClick = true;
     }
-
-
     private void CreateBoard()
     {
-        Vector3 position = Vector3.zero;
-        position.y = 0.1f;
         Vector2Int pos = Vector2Int.zero;
-
         holders.Clear();
-        for (int i = 0; i < dimensions; i++)
+
+        int i = 0;
+        foreach (var position in grid)
         {
-            for (int j = 0; j < dimensions; j++)
-            {
-                if (i < 2 && j < 2) continue;
-                if (i < 2 && j > 4) continue;
-                if (i > 4 && j < 2) continue;
-                if (i > 4 && j > 4) continue;
+            var coords = grid.GetCoords(position);
+            if (coords.x < 2 && coords.y < 2) continue;
+            if (coords.x < 2 && coords.y > 4) continue;
+            if (coords.x > 4 && coords.y < 2) continue;
+            if (coords.x > 4 && coords.y > 4) continue;
 
-                position.x = j + offset;
-                position.z = i + offset;
-                pos.x = j;
-                pos.y = i;
+            var holder = Instantiate(holderPrefab, position, Quaternion.identity);
+            holder.transform.SetParent(graphicsTransform);
+            holder.Initialize(this, i++, coords, PieceHolder.State.Filled);
 
-                var holder = Instantiate(holderPrefab, position, Quaternion.identity);
-                holder.transform.SetParent(graphicsTransform);
-                holder.Initialize(this, holders.Count, pos, PieceHolder.State.Filled);
-
-                holders.Add(holder);
-            }
+            holders.Add(holder);
         }
+    }
+
+    public PieceHolder GetHolderWithIndex(int index)
+    {
+        Debug.Assert(index >= 0 || index < holders.Count, $"No hoplder with index {index}");
+
+        return holders[index];
     }
 
     public void OnHolderClicked(int pieceID)
     {
-        if (firstClick)
+        if (moveCount == 0)
         {
-            holders[pieceID].ChangeState(PieceHolder.State.Empty);
-            firstClick = false;
+            OnUserCommand?.Invoke(new StartCommand(this, pieceID));
             moveCount++;
             OnGameStarted?.Invoke();
             return;
@@ -71,9 +66,9 @@ public class Board : MonoBehaviour
 
         if (holders[pieceID].state == PieceHolder.State.Filled)
         {
-            holders[moveData.Old].DeSelect();
-            moveData.Old = pieceID;
-            holders[moveData.Old].Select();
+            holders[currentMove.Old].DeSelect();
+            currentMove.Old = pieceID;
+            holders[currentMove.Old].Select();
             MoveStarted = true;
         }
         else
@@ -81,7 +76,7 @@ public class Board : MonoBehaviour
             if (!MoveStarted)
                 return;
 
-            moveData.New = pieceID;
+            currentMove.New = pieceID;
 
             if (!IsLegalMove())
                 return;
@@ -94,8 +89,8 @@ public class Board : MonoBehaviour
 
     bool IsLegalMove()
     {
-        var New = holders[moveData.New];
-        var Old = holders[moveData.Old];
+        var New = holders[currentMove.New];
+        var Old = holders[currentMove.Old];
         int XDiff = New.GetXPosition() - Old.GetXPosition(); 
         int YDiff = New.GetYPosition() - Old.GetYPosition();
 
@@ -107,7 +102,7 @@ public class Board : MonoBehaviour
             PieceHolder middlePiece = holders.Where(x => x.GetXPosition() == Old.GetXPosition() + XDiff * 0.5f && x.GetYPosition() == Old.GetYPosition()).FirstOrDefault();
             if (middlePiece.state == PieceHolder.State.Filled)
             {
-                moveData.Deleted = middlePiece.index;
+                currentMove.Deleted = middlePiece.index;
                 return true;
             }
 
@@ -118,7 +113,7 @@ public class Board : MonoBehaviour
             PieceHolder middlePiece = holders.Where(x => x.GetYPosition() == Old.GetYPosition() + YDiff * 0.5f && x.GetXPosition() == Old.GetXPosition()).FirstOrDefault();
             if (middlePiece.state == PieceHolder.State.Filled)
             {
-                moveData.Deleted = middlePiece.index;
+                currentMove.Deleted = middlePiece.index;
                 return true;
             }
 
@@ -130,12 +125,10 @@ public class Board : MonoBehaviour
 
     void ResolveMove()
     {
-        holders[moveData.Old].ChangeState(PieceHolder.State.Empty);
-        holders[moveData.Deleted].ChangeState(PieceHolder.State.Empty);
-        holders[moveData.New].ChangeState(PieceHolder.State.Filled);
+        OnUserCommand?.Invoke(new MoveCommand(this, currentMove));
         moveCount++;
 
-        OnHolderClicked(holders[moveData.New].index);
+        OnHolderClicked(holders[currentMove.New].index);
 
         if (!AvaibleMoves())
         {
@@ -226,3 +219,5 @@ public class Board : MonoBehaviour
         public int Deleted;
     }
 }
+
+

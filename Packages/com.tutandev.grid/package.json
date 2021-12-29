@@ -1,0 +1,19 @@
+{
+  "name": "com.tutandev.grid",
+  "version": "1.0.0",
+  "displayName": "Grid",
+  "description": "Creates 3D positions in a plane grid",
+  "unity": "2019.1",
+  "dependencies": {
+  },
+
+  "keywords": [
+    "Grid",
+    "Tool",
+    "3D"
+  ],
+
+  "author": {
+    "name": "TutanDev"
+  }
+}
