@@ -87,7 +87,6 @@ public class WorldGrid : MonoBehaviour, IEnumerable<Vector3>
         _positionsNormalized.Clear();
         foreach (Vector2Int coord in _grid)
         {
-            Debug.Log("AA" + coord);
             pos = new Vector3((coord.x + xOffset) * scale.x, 0, (coord.y + yOffset) * scale.y);    
             _positionsNormalized.Add(pos);
         }

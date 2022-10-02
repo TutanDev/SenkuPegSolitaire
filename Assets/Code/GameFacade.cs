@@ -13,6 +13,9 @@ public class GameFacade : MonoBehaviour
     CommandInvoker commandInvoker;
     SaveSystem gameData;
 
+    const string startTip = "Touch a piece to remove it and start the game";
+    const string movementTip = "You can jump one tile horizontally or vertically";
+
     private void OnEnable()
     {
         board = Instantiate(boardPrefab, transform);
@@ -26,7 +29,7 @@ public class GameFacade : MonoBehaviour
         gameUI.OnRedoClicked += DoRedo;
         gameUI.OnSaveClicked += DoSave;
         gameUI.OnLoadClicked += DoLoad;
-        gameUI.ShowHelp("Toca la primera pieza para empezar");
+        gameUI.ShowHelp(startTip);
 
         commandInvoker = new CommandInvoker();
         gameData = new SaveSystem();
@@ -66,7 +69,7 @@ public class GameFacade : MonoBehaviour
         if(board.moveCount == 0)
         {
             StopCoroutine("HelpBox");
-            gameUI.ShowHelp("Toca la primera pieza para empezar");
+            gameUI.ShowHelp(startTip);
         }
     }
 
@@ -77,7 +80,7 @@ public class GameFacade : MonoBehaviour
 
     IEnumerator HelpBox()
     {
-        gameUI.ShowHelp("Puedes saltar una ficha horizontalmente o verticalmente");
+        gameUI.ShowHelp(movementTip);
         yield return new WaitForSeconds(5);
         gameUI.HideHelp();
     }
